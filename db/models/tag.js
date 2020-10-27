@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {});
   Tag.associate = function(models) {
-    Tag.belongsto(models.Post, { foreignKey: 'postId' })
+    Tag.belongsTo(models.Post, { foreignKey: 'postId' })
   };
   return Tag;
 };

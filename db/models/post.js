@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {});
   Post.associate = function(models) {
-    Comment.belongsTo(models.User, { foreignKey: 'userId' });
+    Post.belongsTo(models.User, { foreignKey: 'userId' });
 
     const columnMapping = {
       through: 'Reblog',
