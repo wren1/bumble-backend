@@ -3,6 +3,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const cors = require('cors');
+const { ValidationError } = require('sequelize');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/api/users');
@@ -24,6 +25,32 @@ app.use(postsRouter);
 
 
 // error handling
+
+app.use((req, res, next) => {
+    const err = new Error('The requested page could not be found.');
+    err.errors = ['The requested page could not be found.'];
+    err.status = 404;
+    next(err);
+})
+
+app.use((err, req, res, next) => {
+    if (err instanceof ValidationError) {
+        err.errors = err.errors.map((e) => e.message);
+        err.title = 'Sequelize Error';
+    }
+    next(err);
+})
+
+app.use((err, req, res, next) => {
+    res.status(err.status || 500);
+    const isProduction = environment === 'production';
+    res.json({
+        title: err.title || 'Server Error',
+        message: err.message,
+        errors: err.errors,
+        stack: isProduction ? null : err.stack
+    });
+});
 
 
 module.exports = app;

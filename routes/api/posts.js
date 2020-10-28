@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { Op } = require('sequelize');
 const db = require('../../db/models');
 const { User, Comment, Follow, Like, Post, Reblog, Tag } = db;
-const { Op } = require('sequelize');
+const { requireAuth, getUserToken } = require('../../utils/auth');
 
 const asyncHandler = handler => (req, res, next) => handler(req, res, next).catch(next);
 
 // get all of the posts of the current user, as well 
 // as the posts of the users that the user follows
-router.get('/api/posts/:userId', asyncHandler(async (req, res, next) => {
+router.get('/api/posts/:userId', requireAuth, asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
     let users = await Follow.findAll({ where: { followerId: userId } });
     const follows = Object.values(users).map(user => user.followedUserId);
@@ -17,7 +18,7 @@ router.get('/api/posts/:userId', asyncHandler(async (req, res, next) => {
 }))
 
 // create a new post
-router.post('/api/posts', asyncHandler(async (req, res, next) => {
+router.post('/api/posts', requireAuth, asyncHandler(async (req, res, next) => {
     const { userId, type, title, content, imgUrl } = req.body;
     // handle errors
     const post = await Post.create({ userId, type, title, content, imgUrl });
@@ -25,7 +26,7 @@ router.post('/api/posts', asyncHandler(async (req, res, next) => {
 }))
 
 // change a post, only if current user is owner of post
-router.put('/api/posts/:postId', asyncHandler(async (req, res, next) => {
+router.put('/api/posts/:postId', requireAuth, asyncHandler(async (req, res, next) => {
     const id = parseInt(req.params.postId, 10);
     const { userId, type, title, content, imgUrl } = req.body;
     // handle errors
@@ -35,7 +36,7 @@ router.put('/api/posts/:postId', asyncHandler(async (req, res, next) => {
 }))
 
 // delete a post, if the current user is the one that posted the post
-router.delete('/api/posts/:postId', asyncHandler(async (req, res, next) => {
+router.delete('/api/posts/:postId', requireAuth, asyncHandler(async (req, res, next) => {
     const id = parseInt(req.params.postId, 10);
     const post = await Post.findByPk(id);
     await post.destroy();
@@ -43,7 +44,7 @@ router.delete('/api/posts/:postId', asyncHandler(async (req, res, next) => {
 }));
 
 // user likes a post
-router.post('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
+router.post('/api/posts/:postId/like', requireAuth, asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
     const like = await Like.create({ userId, postId });
@@ -51,7 +52,7 @@ router.post('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
 }))
 
 // user unlikes a post, if the post is a post that they'vew laready liked before
-router.delete('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
+router.delete('/api/posts/:postId/like', requireAuth, asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
     const like = Like.findOne({ where: { [Op.and]: [ { userId }, { postId } ] } } );
@@ -60,7 +61,7 @@ router.delete('/api/posts/:postId/like', asyncHandler(async (req, res, next) => 
 }))
 
 // user reblogs a post
-router.post('/api/posts/:postId/reblog', asyncHandler(async (req, res, next) => {
+router.post('/api/posts/:postId/reblog', requireAuth, asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
     const post = await Post.findByPk(postId);

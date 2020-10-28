@@ -1,4 +1,4 @@
-const bearerToken = require('bearer-token');
+// const bearerToken = require('bearer-token');
 const jwt = require('jsonwebtoken');
 
 const { User } = require('../db/models');
@@ -37,6 +37,6 @@ const restoreUser = (req, res, next) => {
         return next();
     })
 }
-const requireAuth = [bearerToken(), restoreUser];
+const requireAuth = [restoreUser];
 
 module.exports = { getUserToken, requireAuth };
