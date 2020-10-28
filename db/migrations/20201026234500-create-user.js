@@ -23,7 +23,6 @@ module.exports = {
           type: Sequelize.STRING(25)
       },
       profilePic: {
-        allowNull: false,
         type: Sequelize.STRING(255)
       },
       banner: {

@@ -19,9 +19,9 @@ router.post('/api/users/token', asyncHandler(async (req, res, next) => {
 router.post('/api/users', asyncHandler(async (req, res, next) => {
     const { email, password, username } = req.body;
     // error handling
-    // hash password
-    const user = await User.create({ email, hashedPassword, username });
-    res.json({ id: user.id })
+    // const hashedPassword = bcrypt.hash(password, 10);
+    const user = await User.create({ email, password, username });
+    res.json({ userId: user.id })
 }))
 
 // changes a user's details
@@ -32,7 +32,6 @@ router.put('/api/users/:userId', asyncHandler(async (req, res, next) => {
     const user = await User.findByPk(userId);
     const updatedUser = await user.update({ username, profilePic, banner, aboutTitle, aboutContent });
     res.json({ updatedUser });
-
 }))
 
 // gets all of the posts of a given user, as well as user's info

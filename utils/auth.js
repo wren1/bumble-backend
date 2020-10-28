@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../db/models');
 const { jwtConfig: { secret, expiresIn } } = require('../config');
 
-const getUSerToken = (user) => {
+const getUserToken = (user) => {
     const userData = {
         id: user.id, email: user.email
     }

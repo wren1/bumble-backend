@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../db/models');
 const { User, Comment, Follow, Like, Post, Reblog, Tag } = db;
+const { Op } = require('sequelize');
 
 const asyncHandler = handler => (req, res, next) => handler(req, res, next).catch(next);
 
@@ -29,7 +30,7 @@ router.put('/api/posts/:postId', asyncHandler(async (req, res, next) => {
     const { userId, type, title, content, imgUrl } = req.body;
     // handle errors
     const post = await Post.findByPk(id);
-    const newPost = await post.update({ id, userId, type, title, content, imgUrl });
+    const newPost = await post.update({ userId, type, title, content, imgUrl });
     res.json({ newPost })
 }))
 
@@ -37,7 +38,7 @@ router.put('/api/posts/:postId', asyncHandler(async (req, res, next) => {
 router.delete('/api/posts/:postId', asyncHandler(async (req, res, next) => {
     const id = parseInt(req.params.postId, 10);
     const post = await Post.findByPk(id);
-    await post.delete();
+    await post.destroy();
     res.status(201).json({ msg: 'Post deleted successfully.' });
 }));
 
@@ -53,8 +54,8 @@ router.post('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
 router.delete('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
-    const like = Like.findOne({ where: { userId, postId } });
-    await like.delete();
+    const like = Like.findOne({ where: { [Op.and]: [ { userId }, { postId } ] } } );
+    await like.destroy();
     res.status(201).json({ msg: 'Like successfully removed.' });
 }))
 
@@ -71,16 +72,23 @@ router.post('/api/posts/:postId/reblog', asyncHandler(async (req, res, next) => 
 router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
     // url decode, parse, etc
     const query = req.params.query;
-    const results = await Post.findAll({ include: [{ model: Tag, where: { description: query } }], 
-        where: { [Op.or]: [ { title: { [Op.iLike]: query } }, { content: { [Op.iLike]: query } } ] }, order: [[ 'createdAt', 'DESC' ]] 
+    const results = await Post.findAll({
+        // include: [{ model: Tag, where: { description: query } }], 
+        where: 
+        { [Op.or]: 
+            [ { title: 
+                { [Op.iLike]: `%${query}%` } }, 
+                { content: 
+                    { [Op.iLike]: `%${query}%` } } ] }, 
+        order: [[ 'createdAt', 'DESC' ]] 
     })
     res.json({ results });
 }))
 
 // get all the posts that have the specified tag
-router.get('/api/posts/:tag', asyncHandler(async (req, res, next) => {
+router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
     const tag = req.params.tag;
-    const results = await Tag.findAll({ where: { description: tag }, include: [{ model: Post }] });
+    const results = await Tag.findAll({ where: { description: tag }, include: Post });
     res.json({ results })
 }))
 
