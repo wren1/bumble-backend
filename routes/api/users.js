@@ -19,7 +19,7 @@ router.post('/api/users/token', asyncHandler(async (req, res, next) => {
         if (!token) {
             return next();
         } else {
-            res.status(201).json({ token });
+            res.status(201).json({ token, userId: user.id });
         }
     } else {
         // handle wrong pw
@@ -34,7 +34,7 @@ router.post('/api/users', asyncHandler(async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashedPassword, username });
     const token = getUserToken(user);
-    res.json({ token })
+    res.json({ token, userId: user.id })
 }))
 
 // changes a user's details
@@ -58,6 +58,14 @@ router.get('/api/users/:userId/posts', asyncHandler(async (req, res, next) => {
      })
 }))
 
+// follow a user
+router.post(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => {
+    const followedUserId = parseInt(req.params.userId, 10);
+    const { userId } = req.body;
+    const folllow = await Follow.create({ followerId: userId, followedUserId });
+    res.json({ msg: 'User successfully followed!' })
+}))
+
 // gets all of the posts the current user liked
 router.get('/api/users/:userId/likes', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
@@ -66,5 +74,6 @@ router.get('/api/users/:userId/likes', asyncHandler(async (req, res, next) => {
     likes.forEach(like => posts[like.Post.id] = like.Post)
     res.json({ posts }) 
 }))
+
 
 module.exports = router;
