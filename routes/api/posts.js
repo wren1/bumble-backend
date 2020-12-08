@@ -43,11 +43,18 @@ router.put('/api/posts/:postId', requireAuth, asyncHandler(async (req, res, next
 }))
 
 // delete a post, if the current user is the one that posted the post
-router.delete('/api/posts/:postId', requireAuth, asyncHandler(async (req, res, next) => {
-    const id = parseInt(req.params.postId, 10);
-    const post = await Post.findByPk(id);
-    await post.destroy();
-    res.status(201).json({ msg: 'Post deleted successfully.' });
+router.delete('/api/posts/:postId/users/:userId', asyncHandler(async (req, res, next) => {
+    console.log('post backend delete', postId, userId)
+    // const { userId } = req.body;
+    const postId = parseInt(req.params.postId, 10);
+    const userId = parseInt(req.params.userId, 10);
+    const post = await Post.findByPk(postId);
+    if (post.userId === userId) {
+        await post.destroy();
+        res.status(201).json({ msg: 'Post deleted successfully.' });
+    } else {
+        res.status(401).json({ msg: "Sorry, you can't do that." })
+    }
 }));
 
 // user likes a post
@@ -59,7 +66,7 @@ router.post('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
 }))
 
 // user unlikes a post, if the post is a post that they'vew laready liked before
-router.delete('/api/posts/:postId/like', requireAuth, asyncHandler(async (req, res, next) => {
+router.delete('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
     // const like = Like.findOne({ where: { userId, postId } } );
