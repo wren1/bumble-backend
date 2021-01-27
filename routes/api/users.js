@@ -62,7 +62,7 @@ router.get('/api/users/:userId/posts', asyncHandler(async (req, res, next) => {
 router.post(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => {
     const followedUserId = parseInt(req.params.userId, 10);
     const { userId } = req.body;
-    const folllow = await Follow.create({ followerId: userId, followedUserId });
+    const follow = await Follow.create({ followerId: userId, followedUserId });
     res.json({ msg: 'User successfully followed!' })
 }))
 
@@ -70,7 +70,7 @@ router.post(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => 
 router.delete(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => {
     const followedUserId = parseInt(req.params.userId, 10);
     const { userId } = req.body;
-    const follow = await Follow.findOne({ where: { followerId: userId, followedUserId } })
+    await Follow.destroy({ where: { followerId: userId, followedUserId } })
     res.json({ msg: 'User successfully followed!' })
 }))
 
