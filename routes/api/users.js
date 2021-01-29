@@ -90,8 +90,6 @@ router.get('/api/users/:userId/follows', asyncHandler(async (req, res, next) => 
     let followIds = [];
     user.Follows.forEach(followId => followIds.push(followId.followedUserId));
     const users = await User.findAll({ where: { id: followIds }, order: [['username', 'DESC']] });
-    // const posts = {};
-    // likes.forEach(like => posts[like.Post.id] = like.Post)
     res.json({ users }) 
 }))
 

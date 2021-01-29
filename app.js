@@ -15,6 +15,7 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000" }))
+// app.use(cors({ origin: "https://bumbleapp.herokuapp.com/" }))
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
