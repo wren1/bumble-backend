@@ -87,7 +87,9 @@ router.get('/api/users/:userId/likes', asyncHandler(async (req, res, next) => {
 router.get('/api/users/:userId/follows', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
     const user = await User.findByPk(userId, { include: [{ model: Follow }] });
-    const users = await User.findAll({ where: { userId }, include: Post, order: [['createdAt', 'DESC']] });
+    let followIds = [];
+    user.Follows.forEach(followId => followIds.push(followId.followedUserId));
+    const users = await User.findAll({ where: { id: followIds }, order: [['username', 'DESC']] });
     // const posts = {};
     // likes.forEach(like => posts[like.Post.id] = like.Post)
     res.json({ users }) 
