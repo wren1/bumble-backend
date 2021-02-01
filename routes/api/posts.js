@@ -119,5 +119,13 @@ router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) 
     res.json({ results })
 }))
 
+// get all the posts that have the specified tag
+router.delete('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
+    const postId = req.params.tag;
+    const tag = req.params.tag;
+    const post = await Post.findByPk(postId)
+    res.json({ results })
+}))
+
 module.exports = router;
 
