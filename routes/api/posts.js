@@ -110,7 +110,14 @@ router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
     res.json({ results })
 }))
 
-// gets all the comments
+// get all the posts that have the specified tag
+router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
+    const postId = req.params.tag;
+    const tag = req.params.tag;
+    const post = await Post.findByPk(postId)
+    const results = await Tag.findAll({ where: { description: tag }, include: Post });
+    res.json({ results })
+}))
 
 module.exports = router;
 
