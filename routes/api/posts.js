@@ -110,21 +110,23 @@ router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
     res.json({ results })
 }))
 
-// get all the posts that have the specified tag
+// add a tag to post
 router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
     const postId = req.params.tag;
     const tag = req.params.tag;
+    const tag = await Tag.create({ postId, description: tag })
     const post = await Post.findByPk(postId)
-    const results = await Tag.findAll({ where: { description: tag }, include: Post });
-    res.json({ results })
+    res.json({ post })
 }))
 
-// get all the posts that have the specified tag
+// delete tag from post
 router.delete('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
     const postId = req.params.tag;
     const tag = req.params.tag;
     const post = await Post.findByPk(postId)
-    res.json({ results })
+    const tag = Tag.findOne({ where: { description: tag, postId } })
+    await tag.destroy();
+    res.json({ post })
 }))
 
 module.exports = router;
