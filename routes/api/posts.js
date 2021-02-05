@@ -13,7 +13,7 @@ router.get('/api/posts/:userId', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
     let users = await Follow.findAll({ where: { followerId: userId }, include: User });
     const follows = Object.values(users).map(user => user.followedUserId);
-    let posts = await Post.findAll({where: { userId: [userId, ...follows] }, order: [['updatedAt', 'DESC']] });
+    let posts = await Post.findAll({where: { userId: [userId, ...follows] }, order: [['updatedAt', 'DESC']], include: Tag });
     users = users.map(user => user.User);
     res.json({ posts, users });
 }))
@@ -70,9 +70,6 @@ router.post('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
 router.delete('/api/posts/:postId/like', asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.postId, 10);
     const { userId } = req.body;
-    // const like = Like.findOne({ where: { userId, postId } } );
-    // console.log('unlike: ', like);
-    // await like.destroy();
     await Like.destroy({ where: { userId, postId } })
     res.status(201).json({ msg: 'Like successfully removed.' });
 }))
@@ -91,7 +88,6 @@ router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
     // url decode, parse, etc
     let query = req.params.query;
     const results = await Post.findAll({
-        // include: [{ model: Tag, where: { description: query } }], 
         where: 
         { [Op.or]: 
             [ { title: 
@@ -115,7 +111,7 @@ router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) 
     const postId = req.params.tag;
     const tag = req.params.tag;
     const tag = await Tag.create({ postId, description: tag })
-    const post = await Post.findByPk(postId)
+    const post = await Post.findByPk(postId, { include: Tag })
     res.json({ post })
 }))
 
