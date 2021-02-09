@@ -87,7 +87,6 @@ router.post('/api/posts/:postId/reblog', requireAuth, asyncHandler(async (req, r
 router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
     // url decode, parse, etc
     let query = req.params.query;
-    let posts = {};
     const results = await Post.findAll({
         where: 
         { [Op.or]: 
@@ -97,26 +96,19 @@ router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
                     { [Op.iLike]: `%${query}%` } } ] }, 
         order: [[ 'createdAt', 'DESC' ]] 
     })
-    for (let res in results) {
-        posts[results[res].Post.id] = results[res].Post;
-    }
-    res.json({ posts });
+    res.json({ results });
 }))
 
 // get all the posts that have the specified tag
 router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
     const tag = req.params.tag;
-    let posts = {};
     const results = await Tag.findAll({ where: { description: tag }, include: Post });
-    for (let res in results) {
-        posts[results[res].Post.id] = results[res].Post;
-    }
-    res.json({ posts })
+    res.json({ results })
 }))
 
 // add a tag to post
 router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
-    const postId = req.params.tag;
+    const postId = parseInt(req.params.tag, 10);
     const tag = req.params.tag;
     const tag = await Tag.create({ postId, description: tag })
     const post = await Post.findByPk(postId, { include: Tag })
@@ -125,7 +117,7 @@ router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) 
 
 // delete tag from post
 router.delete('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
-    const postId = req.params.tag;
+    const postId = parseInt(req.params.tag, 10);
     const tag = req.params.tag;
     const post = await Post.findByPk(postId)
     const tag = Tag.findOne({ where: { description: tag, postId } })
