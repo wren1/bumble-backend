@@ -87,6 +87,7 @@ router.post('/api/posts/:postId/reblog', requireAuth, asyncHandler(async (req, r
 router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
     // url decode, parse, etc
     let query = req.params.query;
+    let posts = {};
     const results = await Post.findAll({
         where: 
         { [Op.or]: 
@@ -96,14 +97,21 @@ router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
                     { [Op.iLike]: `%${query}%` } } ] }, 
         order: [[ 'createdAt', 'DESC' ]] 
     })
-    res.json({ results });
+    for (let res in results) {
+        posts[results[res].Post.id] = results[res].Post;
+    }
+    res.json({ posts });
 }))
 
 // get all the posts that have the specified tag
 router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
     const tag = req.params.tag;
+    let posts = {};
     const results = await Tag.findAll({ where: { description: tag }, include: Post });
-    res.json({ results })
+    for (let res in results) {
+        posts[results[res].Post.id] = results[res].Post;
+    }
+    res.json({ posts })
 }))
 
 // add a tag to post
