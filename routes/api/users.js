@@ -93,5 +93,15 @@ router.get('/api/users/:userId/follows', asyncHandler(async (req, res, next) => 
     res.json({ users }) 
 }))
 
+// get all user's posts with specific tag
+router.get('/api/users/:userId/tags/:tag', asyncHandler(async (req, res, next) => {
+    const userId = parseInt(req.params.userId, 10);
+    const tag = parseInt(req.params.tag);
+    const posts = Tag.findAll({ where: { description: tag },  })
+    // const user = await User.findByPk(userId, { include: [{ model: Follow }] });
+    // const users = await User.findAll({ where: { id: followIds }, order: [['username', 'DESC']] });
+    res.json({ posts }) 
+}))
+
 
 module.exports = router;
