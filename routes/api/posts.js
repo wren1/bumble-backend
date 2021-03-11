@@ -110,7 +110,7 @@ router.get('/api/search/tags/:tag', asyncHandler(async (req, res, next) => {
 router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.tag, 10);
     const tag = req.params.tag;
-    const tag = await Tag.create({ postId, description: tag })
+    const tnewTag = await Tag.create({ postId, description: tag })
     const post = await Post.findByPk(postId, { include: Tag })
     res.json({ post })
 }))
@@ -118,9 +118,9 @@ router.post('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) 
 // delete tag from post
 router.delete('/api/posts/:postId/tags/:tag', asyncHandler(async (req, res, next) => {
     const postId = parseInt(req.params.tag, 10);
-    const tag = req.params.tag;
+    const tagContent = req.params.tag;
     const post = await Post.findByPk(postId)
-    const tag = Tag.findOne({ where: { description: tag, postId } })
+    const tag = Tag.findOne({ where: { description: tagContent, postId } })
     await tag.destroy();
     res.json({ post })
 }))
