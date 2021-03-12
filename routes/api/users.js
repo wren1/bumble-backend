@@ -11,7 +11,8 @@ const asyncHandler = handler => (req, res, next) => handler(req, res, next).catc
 router.post('/api/users/token', asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     // error handling
-    const user = await User.findOne({ where: { email }, include: { Likes } })
+    // const user = await User.findOne({ where: { email }, include: { Likes } })
+    const user = await User.findOne({ where: { email } })
     // check hashed password
     const passwordMatch = await bcrypt.compareSync(password, user.password.toString());
     if (passwordMatch) {
