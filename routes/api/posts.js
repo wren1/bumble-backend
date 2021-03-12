@@ -11,11 +11,24 @@ const asyncHandler = handler => (req, res, next) => handler(req, res, next).catc
 // as the posts of the users that the user follows
 router.get('/api/posts/:userId', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
+    const user = await User.findByPk(userId)
     let users = await Follow.findAll({ where: { followerId: userId }, include: User });
     const follows = Object.values(users).map(user => user.followedUserId);
-    let posts = await Post.findAll({where: { userId: [userId, ...follows] }, order: [['updatedAt', 'DESC']], include: Tag });
+    let posts = await Post.findAll({where: { userId: [userId, ...follows] }, order: [['updatedAt', 'DESC']], include: [ { model: Tag }, { model: Like } ] });
     users = users.map(user => user.User);
-    res.json({ posts, users });
+    let allUsers = users.map(user => {
+        return {
+            id: user.id, 
+            username: user.username, 
+            profilePic: user.profilePic, 
+            banner: user.banner, 
+            aboutTitle: user.aboutTitle, 
+            aboutContent: user.aboutContent, 
+            likes: user.Likes, 
+            follows: user.Follows
+        }
+    })
+    res.json({ posts, users: [...allUsers, user]});
 }))
 
 // create a new post
@@ -33,13 +46,15 @@ router.post('/api/posts', asyncHandler(async (req, res, next) => {
 }))
 
 // change a post, only if current user is owner of post
-router.put('/api/posts/:postId', requireAuth, asyncHandler(async (req, res, next) => {
+router.put('/api/posts/:postId', asyncHandler(async (req, res, next) => {
     const id = parseInt(req.params.postId, 10);
-    const { userId, type, title, content, imgUrl } = req.body;
+    const { userId, type, title, content, imgUrl } = req.body.post;
+    // const { post } = req.body;
     // handle errors
-    const post = await Post.findByPk(id);
-    const newPost = await post.update({ userId, type, title, content, imgUrl });
-    res.json({ newPost })
+    const updatedPost = await Post.findByPk(id);
+    // const updatedPost = await post.update({ userId, type, title, content, imgUrl });
+    await updatedPost.update({ userId, type, title, content, imgUrl });
+    res.json({ post: updatedPost })
 }))
 
 // delete a post, if the current user is the one that posted the post
