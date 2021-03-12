@@ -11,7 +11,7 @@ const asyncHandler = handler => (req, res, next) => handler(req, res, next).catc
 router.post('/api/users/token', asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     // error handling
-    const user = await User.findOne({ where: { email } })
+    const user = await User.findOne({ where: { email }, include: { Likes } })
     // check hashed password
     const passwordMatch = await bcrypt.compareSync(password, user.password.toString());
     if (passwordMatch) {
@@ -19,7 +19,7 @@ router.post('/api/users/token', asyncHandler(async (req, res, next) => {
         if (!token) {
             return next();
         } else {
-            res.status(201).json({ token, userId: user.id });
+            res.status(201).json({ token, user });
         }
     } else {
         // handle wrong pw
@@ -34,7 +34,18 @@ router.post('/api/users', asyncHandler(async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashedPassword, username });
     const token = getUserToken(user);
-    res.json({ token, userId: user.id })
+    res.json({ token, user })
+}))
+
+// get a user
+router.get('/api/users/:userId', asyncHandler(async (req, res, next) => {
+    const userId = parseInt(req.params.userId, 10);
+    const user = await User.findByPk(userId, { include: [{ model: Follow }, { model: Like }] });
+    user.Likes.map(like => like.postId)
+    
+    console.log(user.Likes)
+    // const users = await User.findAll({ where: { id: followIds }, order: [['username', 'DESC']] });
+    res.json({ user }) 
 }))
 
 // changes a user's details
