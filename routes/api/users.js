@@ -41,11 +41,27 @@ router.post('/api/users', asyncHandler(async (req, res, next) => {
 router.get('/api/users/:userId', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
     const user = await User.findByPk(userId, { include: [{ model: Follow }, { model: Like }] });
-    user.Likes.map(like => like.postId)
-    
-    console.log(user.Likes)
+    // user.Likes.map(like => like.postId)
+    for (let like in user.Likes) {
+        // console.log('user.Likes[like]: ', user.Likes[like])
+        // console.log('user.Likes[like].postId: ', user.Likes[like].postId)
+        user.Likes[like] = user.Likes[like].postId
+        // console.log('user.Likes: ', user.Likes)
+    }
+    let currentUser = { 
+        id: user.id, 
+        email: user.email, 
+        username: user.username, 
+        profilePic: user.profilePic, 
+        banner: user.banner, 
+        aboutTitle: user.aboutTitle, 
+        aboutContent: user.aboutContent, 
+        likes: user.Likes, 
+        follows: user.Follows
+     }
+    // console.log('user: ', user)
     // const users = await User.findAll({ where: { id: followIds }, order: [['username', 'DESC']] });
-    res.json({ user }) 
+    res.json({ user: currentUser }) 
 }))
 
 // changes a user's details
