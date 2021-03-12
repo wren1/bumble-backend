@@ -45,8 +45,11 @@ router.get('/api/users/:userId', asyncHandler(async (req, res, next) => {
     for (let like in user.Likes) {
         // console.log('user.Likes[like]: ', user.Likes[like])
         // console.log('user.Likes[like].postId: ', user.Likes[like].postId)
-        user.Likes[like] = user.Likes[like].postId
+        user.Likes[like] = user.Likes[like].postId;
         // console.log('user.Likes: ', user.Likes)
+    }
+    for (follow in user.Follows) {
+        user.Follows[follow] = user.Follows[follow].followedUserId;
     }
     let currentUser = { 
         id: user.id, 
@@ -77,27 +80,26 @@ router.put('/api/users/:userId', requireAuth, asyncHandler(async (req, res, next
 // gets all of the posts of a given user, as well as user's info
 router.get('/api/users/:userId/posts', asyncHandler(async (req, res, next) => {
     const userId = parseInt(req.params.userId, 10);
-    const user = await User.findByPk(userId, { include: [{ model: Post }] });
+    const user = await User.findByPk(userId);
     const { username, profilePic, banner, aboutTitle, aboutContent } = user;
-    const posts = user.Posts;
-    res.json({ 
-        id: userId, username, profilePic, banner, aboutTitle, aboutContent, posts
-     })
+    const posts = await Post.findAll({ where: { userId } })
+    console.log('user n posts: ', user, posts)
+    res.json({ user, posts })
 }))
 
 // follow a user
 router.post(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => {
     const followedUserId = parseInt(req.params.userId, 10);
-    const { userId } = req.body;
-    const follow = await Follow.create({ followerId: userId, followedUserId });
+    const { currentUserId } = req.body;
+    const follow = await Follow.create({ followerId: currentUserId, followedUserId });
     res.json({ msg: 'User successfully followed!' })
 }))
 
 // unfollow a user
 router.delete(`/api/users/:userId/follow`, asyncHandler(async (req, res, next) => {
     const followedUserId = parseInt(req.params.userId, 10);
-    const { userId } = req.body;
-    await Follow.destroy({ where: { followerId: userId, followedUserId } })
+    const { currentUserId } = req.body;
+    await Follow.destroy({ where: { followerId: currentUserId, followedUserId } })
     res.json({ msg: 'User successfully followed!' })
 }))
 

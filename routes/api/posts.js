@@ -109,9 +109,12 @@ router.get('/api/search/:query', asyncHandler(async (req, res, next) => {
                 { [Op.iLike]: `%${query}%` } }, 
                 { content: 
                     { [Op.iLike]: `%${query}%` } } ] }, 
-        order: [[ 'createdAt', 'DESC' ]] 
+        order: [[ 'createdAt', 'DESC' ]],
+        include: [ { model: User } ]
     })
-    res.json({ results });
+    let users = [];
+    results.forEach(post => users.push(post.User))
+    res.json({ results, users });
 }))
 
 // get all the posts that have the specified tag
